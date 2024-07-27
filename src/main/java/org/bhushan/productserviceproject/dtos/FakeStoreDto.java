@@ -9,35 +9,39 @@ import org.bhushan.productserviceproject.models.Rating;
 @Getter
 @Setter
 public class FakeStoreDto {
-    private int id;
+    private Long id;
     private String title;
-    private String description;
     private Double price;
-    private String image;
+    private String description;
     private String category;
+    private String image;
     private Rating rating;
 
 
     public Product toProduct() {
         Product product = new Product();
         product.setId(id);
-        product.setName(title);
+        product.setTitle(title);
         product.setDescription(description);
         product.setPrice(price);
         product.setImageUrl(image);
-
-        Category categoryDto = new Category();
-        categoryDto.setTitle(category);
-        product.setCategory(categoryDto);
-
-        Rating ratingDto = new Rating();
-        ratingDto.setRate(rating.getRate());
-        ratingDto.setCount(rating.getCount());
-        product.setRating(ratingDto);
-
-
-
+        Category categoryObj = new Category();
+        categoryObj.setTitle(category);
+        product.setCategory(categoryObj);
+        product.setRate(rating.getRate());
+        product.setCount(rating.getCount());
         return product;
+    }
+
+    public NewProductResponseDto toNewProductResponseDto() {
+        NewProductResponseDto newProductResponseDto = new NewProductResponseDto();
+        newProductResponseDto.setId(id);
+        newProductResponseDto.setTitle(title);
+        newProductResponseDto.setDescription(description);
+        newProductResponseDto.setPrice(price);
+        newProductResponseDto.setImage(image);
+        newProductResponseDto.setCategory(category);
+        return newProductResponseDto;
     }
 
 }

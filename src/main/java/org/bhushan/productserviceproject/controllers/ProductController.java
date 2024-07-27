@@ -6,6 +6,7 @@ import org.bhushan.productserviceproject.exceptions.CategoryNotFoundException;
 import org.bhushan.productserviceproject.exceptions.InvalidLimitException;
 import org.bhushan.productserviceproject.exceptions.ProductNotFoundException;
 import org.bhushan.productserviceproject.models.Product;
+import org.bhushan.productserviceproject.models.Rating;
 import org.bhushan.productserviceproject.services.ProductService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,13 +35,12 @@ public class ProductController {
     public ResponseEntity<List<ProductResponseDto>> getAllProducts(
             @RequestParam("pageNumber") int pageNumber,
             @RequestParam("pageSize") int pageSize,
-            @RequestParam("sortBy") String sortParam)
+            @RequestParam("sortBy") String sortBy)
     {
-        Page<Product> products = productService.getAllProducts(pageNumber, pageSize, sortParam);
+        Page<Product> products = productService.getAllProducts(pageNumber, pageSize, sortBy);
         List<ProductResponseDto> productResponseDtos = new ArrayList<>();
         for (Product product : products.getContent()) {
-            ProductResponseDto productResponseDto = modelMapper.map(product, ProductResponseDto.class);
-            productResponseDtos.add(productResponseDto);
+            productResponseDtos.add(convertToProductResponseDTO(product));
         }
         return new ResponseEntity<>(productResponseDtos, HttpStatus.OK);
     }
@@ -60,6 +60,10 @@ public class ProductController {
         List<Product> products = productService.getAllProducts();
         for (Product product : products) {
             productResponseDtos.add(convertToProductResponseDTO(product));
+//            productResponseDtos.add(convertToProductResponseDTO(product));
+//            RatingDto ratingDto = new RatingDto();
+//            ratingDto.setCount(product.getCount());
+//            ratingDto.setRate(product.getRate());
         }
         return new ResponseEntity<>(productResponseDtos, HttpStatus.OK);
     }

@@ -1,20 +1,20 @@
 package org.bhushan.productserviceproject.models;
 
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
-public class Product {
-    private int id;
-    private String name;
+@Entity
+public class Product extends BaseModel {
+    private String title;
     private String description;
     private Double price;
     private String imageUrl ;
-    private Category category ;
-    private Rating rating;
-
-
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    private Category category;
+    private float rate ;
+    private int count;
 }
+
