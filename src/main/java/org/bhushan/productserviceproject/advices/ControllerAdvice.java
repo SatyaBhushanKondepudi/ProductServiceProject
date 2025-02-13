@@ -3,6 +3,7 @@ package org.bhushan.productserviceproject.advices;
 import org.bhushan.productserviceproject.dtos.ErrorDto;
 import org.bhushan.productserviceproject.exceptions.CategoryNotFoundException;
 import org.bhushan.productserviceproject.exceptions.InvalidLimitException;
+import org.bhushan.productserviceproject.exceptions.InvalidTokenException;
 import org.bhushan.productserviceproject.exceptions.ProductNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,5 +31,12 @@ public class ControllerAdvice {
         ErrorDto errorDto = new ErrorDto();
         errorDto.setMessage(categoryNotFoundException.getMessage());
         return new ResponseEntity<>(errorDto, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorDto> handleInvalidTokenException(InvalidTokenException invalidTokenException) {
+        ErrorDto errorDto = new ErrorDto();
+        errorDto.setMessage(invalidTokenException.getMessage());
+        return new ResponseEntity<>(errorDto, HttpStatus.FORBIDDEN);
     }
 }

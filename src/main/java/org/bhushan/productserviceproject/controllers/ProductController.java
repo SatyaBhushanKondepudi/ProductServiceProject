@@ -1,9 +1,11 @@
 package org.bhushan.productserviceproject.controllers;
 
 import jakarta.websocket.server.PathParam;
+import org.bhushan.productserviceproject.authCommons.AuthenticationCommons;
 import org.bhushan.productserviceproject.dtos.*;
 import org.bhushan.productserviceproject.exceptions.CategoryNotFoundException;
 import org.bhushan.productserviceproject.exceptions.InvalidLimitException;
+import org.bhushan.productserviceproject.exceptions.InvalidTokenException;
 import org.bhushan.productserviceproject.exceptions.ProductNotFoundException;
 import org.bhushan.productserviceproject.models.Product;
 import org.bhushan.productserviceproject.models.Rating;
@@ -21,22 +23,28 @@ import java.util.List;
 @RestController
 public class ProductController {
 
-    public ProductService productService;
-    public ModelMapper modelMapper;
+    private ProductService productService;
+    private ModelMapper modelMapper;
+    private AuthenticationCommons authenticationCommons;
+
 
     public ProductController(
             @Qualifier("selfProductService") ProductService productService ,
-            ModelMapper modelMapper) {
+            ModelMapper modelMapper,
+            AuthenticationCommons authenticationCommons) {
         this.productService = productService;
         this.modelMapper = modelMapper;
+        this.authenticationCommons = authenticationCommons;
     }
 
     @GetMapping("/products/page")
     public ResponseEntity<List<ProductResponseDto>> getAllProducts(
             @RequestParam("pageNumber") int pageNumber,
             @RequestParam("pageSize") int pageSize,
-            @RequestParam("sortBy") String sortBy)
+            @RequestParam("sortBy") String sortBy,
+            @RequestHeader String authenticationToken) throws InvalidTokenException
     {
+        authenticationCommons.validateToken(authenticationToken);
         Page<Product> products = productService.getAllProducts(pageNumber, pageSize, sortBy);
         List<ProductResponseDto> productResponseDtos = new ArrayList<>();
         for (Product product : products.getContent()) {
@@ -47,7 +55,10 @@ public class ProductController {
 
 
     @GetMapping("/products/{id}")
-    public ResponseEntity<ProductResponseDto> getProductDetails(@PathVariable("id") Long productId) throws ProductNotFoundException {
+    public ResponseEntity<ProductResponseDto> getProductDetails(@PathVariable("id") Long productId,
+                                                                @RequestHeader String authenticationToken) throws  InvalidTokenException, ProductNotFoundException {
+
+        UserDto userDto = authenticationCommons.validateToken(authenticationToken);
         Product product = productService.getSingleProduct(productId);
         ProductResponseDto productResponseDto = convertToProductResponseDTO(product);
         return new ResponseEntity<>(productResponseDto, HttpStatus.OK);
@@ -55,7 +66,8 @@ public class ProductController {
 
 
     @GetMapping("/products/")
-    public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
+    public ResponseEntity<List<ProductResponseDto>> getAllProducts(@RequestHeader String authenticationToken) throws InvalidTokenException{
+        authenticationCommons.validateToken(authenticationToken);
         List<ProductResponseDto> productResponseDtos = new ArrayList<>();
         List<Product> products = productService.getAllProducts();
         for (Product product : products) {
@@ -69,7 +81,9 @@ public class ProductController {
     }
 
     @GetMapping("/products")
-    public ResponseEntity<List<ProductResponseDto>> getLimitedProducts(@RequestParam("limit") int limit) throws InvalidLimitException {
+    public ResponseEntity<List<ProductResponseDto>> getLimitedProducts(@RequestParam("limit") int limit,
+                                                                       @RequestHeader String authenticationToken) throws InvalidTokenException, InvalidLimitException {
+        authenticationCommons.validateToken(authenticationToken);
         List<Product> products = productService.getLimitedProducts(limit);
         List<ProductResponseDto> productResponseDtos = new ArrayList<>();
         for (Product product : products) {
@@ -86,7 +100,9 @@ public class ProductController {
     }
 
     @GetMapping("/products/category/{categoryName}")
-    public ResponseEntity<List<ProductResponseDto>> getProductsByCategory(@PathVariable("categoryName") String categoryName) throws CategoryNotFoundException {
+    public ResponseEntity<List<ProductResponseDto>> getProductsByCategory(@PathVariable("categoryName") String categoryName,
+                                                                          @RequestHeader String authenticationToken) throws InvalidTokenException, CategoryNotFoundException {
+        authenticationCommons.validateToken(authenticationToken);
         List<Product> products = productService.getProductsByCategory(categoryName);
         List<ProductResponseDto> productResponseDtos = new ArrayList<>();
         for (Product product : products) {
@@ -98,7 +114,9 @@ public class ProductController {
 
     @PostMapping("/products")
     public ResponseEntity<NewProductResponseDto> addANewProduct(
-            @RequestBody ProductRequestDto productRequestDto){
+            @RequestBody ProductRequestDto productRequestDto,
+            @RequestHeader String authenticationToken) throws InvalidTokenException {
+        authenticationCommons.validateToken(authenticationToken);
         Product product = productService.addANewProduct(
                 productRequestDto.getTitle() , productRequestDto.getPrice() ,
                 productRequestDto.getDescription() , productRequestDto.getImage(),
@@ -114,8 +132,10 @@ public class ProductController {
     @PatchMapping("/products/{productID}")
     public ResponseEntity<NewProductResponseDto > updateAProduct(
             @PathVariable("productID") Long productID ,
-            @RequestBody ProductRequestDto productRequestDto
-    ) throws ProductNotFoundException {
+            @RequestBody ProductRequestDto productRequestDto,
+            @RequestHeader String authenticationToken
+    ) throws InvalidTokenException, ProductNotFoundException {
+        authenticationCommons.validateToken(authenticationToken);
         Product product = productService.updateAProduct(productID ,
                 productRequestDto.getTitle() , productRequestDto.getPrice(),
                 productRequestDto.getDescription() , productRequestDto.getImage(),
@@ -127,7 +147,9 @@ public class ProductController {
     @PutMapping("/products/{productID}")
     public ResponseEntity<NewProductResponseDto> replaceAProduct(
             @PathVariable("productID") Long productID ,
-            @RequestBody ProductRequestDto productRequestDto) throws ProductNotFoundException {
+            @RequestBody ProductRequestDto productRequestDto,
+            @RequestHeader String authenticationToken) throws InvalidTokenException, ProductNotFoundException {
+        authenticationCommons.validateToken(authenticationToken);
         Product product = productService.replaceAProduct(
                 productID , productRequestDto.getTitle() , productRequestDto.getPrice(),
                 productRequestDto.getDescription() , productRequestDto.getImage(),
@@ -138,8 +160,10 @@ public class ProductController {
 
     @DeleteMapping("/products/{productID}")
     public ResponseEntity<NewProductResponseDto> deleteProduct(@PathVariable("productID")
-                                                                Long productID)
-            throws ProductNotFoundException {
+                                                                Long productID,
+                                                               String authenticationToken)
+            throws InvalidTokenException, ProductNotFoundException {
+        authenticationCommons.validateToken(authenticationToken);
         Product product = productService.deleteProduct(productID);
         NewProductResponseDto newProductResponseDto  = convertToNewProductResponse(product);
         return new ResponseEntity<>(newProductResponseDto, HttpStatus.OK);
