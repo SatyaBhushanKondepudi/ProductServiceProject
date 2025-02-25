@@ -121,7 +121,7 @@ public class ProductController {
                 productRequestDto.getTitle() , productRequestDto.getPrice() ,
                 productRequestDto.getDescription() , productRequestDto.getImage(),
                 productRequestDto.getCategory() , productRequestDto.getRating().getRate() ,
-                productRequestDto.getRating().getCount()
+                    productRequestDto.getRating().getCount()
         );
 
         NewProductResponseDto newProductResponseDto = convertToNewProductResponse(product);

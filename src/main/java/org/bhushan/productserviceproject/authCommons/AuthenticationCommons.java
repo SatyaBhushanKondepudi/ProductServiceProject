@@ -17,8 +17,9 @@ public class AuthenticationCommons {
     }
 
     public UserDto validateToken(String token){
+        System.out.println("Validating the Token Value");
         UserDto userDto =  restTemplate.getForObject(
-                "http://localhost:4141/user/validate?token=" + token,
+                "http://USERSERVICE/user/validate?token=" + token,
                 UserDto.class);
         if(userDto == null){
             throw new InvalidTokenException("Invalid Token Passed");
